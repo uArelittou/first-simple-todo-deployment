@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我的全栈运维练习</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        h1 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+        .status-box { background: #e8f5e9; padding: 15px; border-radius: 5px; color: #2e7d32; margin-bottom: 20px;}
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .tag { padding: 4px 8px; border-radius: 4px; font-size: 0.85em; }
+        .done { background: #d1fae5; color: #065f46; }
+        .todo { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+    <h1>📋 任务管理系统</h1>
+    
+    <div id="status" class="status-box">正在连接后端 API...</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>任务内容</th>
+                <th>状态</th>
+            </tr>
+        </thead>
+        <tbody id="task-list">
+            <!-- 这里的 JavaScript 会自动填入数据 -->
+        </tbody>
+    </table>
+
+    <script>
+        // 1. 定义 API 地址
+        const apiUrl = '/api/tasks';
+
+        // 2. 获取数据
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP 错误! 状态码: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(res => {
+                const statusBox = document.getElementById('status');
+                const list = document.getElementById('task-list');
+
+                // 显示连接成功信息
+                statusBox.textContent = `✅ 后端连接成功！数据来源：${res.source || 'MySQL 数据库'}`;
+                
+                // 3. 渲染列表
+                list.innerHTML = ''; // 清空旧数据
+                res.data.forEach(task => {
+                    const row = document.createElement('tr');
+                    const statusHtml = task.status 
+                        ? '<span class="tag done">已完成</span>' 
+                        : '<span class="tag todo">待办</span>';
+                    
+                    row.innerHTML = `
+                        <td>${task.id}</td>
+                        <td>${task.content}</td>
+                        <td>${statusHtml}</td>
+                    `;
+                    list.appendChild(row);
+                });
+            })
+            .catch(error => {
+                const statusBox = document.getElementById('status');
+                statusBox.textContent = `❌ 连接失败: ${error.message}`;
+                statusBox.style.backgroundColor = '#fee2e2';
+                statusBox.style.color = '#991b1b';
+            });
+    </script>
+</body>
+</html>
+
